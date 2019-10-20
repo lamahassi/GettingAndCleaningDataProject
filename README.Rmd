@@ -7,6 +7,9 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+The script R_analysis (copied here) is used to generate a tidy data set from the raw data that includes the average mean and std for each measurement by subject and activity type. 
+The code book contains a description of the raw data set, tidy data set, and variables.
+
 setwd("~/Desktop/Coursera/Getting and Cleaning Data/Project 1/UCI HAR Dataset")
 
 library(dplyr)
