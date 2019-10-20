@@ -1,0 +1,51 @@
+---
+title: Getting and Cleaning Data Course Project
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+setwd("~/Desktop/Coursera/Getting and Cleaning Data/Project 1/UCI HAR Dataset")
+
+library(dplyr)
+
+#Assigning the data frames
+##And fixing column names
+features <- read.table("features.txt")
+x_test <- read.table("test/X_test.txt", col.names = features[ ,2])
+x_train <- read.table("train/X_train.txt", col.names = features[ ,2])
+subject_test <- read.table("test/subject_test.txt", col.names = "subject_id")
+subject_train <- read.table("train/subject_train.txt", col.names = "subject_id")
+y_test <- read.table("test/y_test.txt", col.names = "activity_id")
+y_train <- read.table("train/y_train.txt", col.names = "activity_id")
+activity_labels <- read.table("activity_labels.txt", col.names = c("activity_id", "activity_name"))
+
+#Merging the data sets
+test_set <- cbind(y_test, subject_test, x_test)
+train_set <- cbind(y_train, subject_train, x_train)
+full_set <- rbind(test_set, train_set)
+    
+#Adding activity labels
+full_set <- merge(full_set, activity_labels, by = "activity_id", all.x = TRUE)
+
+#Extract columns with mean and std only
+tidy_set1 <- select(full_set, "subject_id", "activity_name", contains("mean"), contains("std"))
+
+#Using descriptive variable names
+names(tidy_set1) <- gsub("^t", "time", names(full_set))
+names(tidy_set1) <- gsub("^f", "frequency", names(full_set))
+names(tidy_set1) <- gsub("Acc", "Accelerometer", names(full_set))
+names(tidy_set1) <- gsub("Gyro", "Gyroscope", names(full_set))
+names(tidy_set1) <- gsub(".mean...", "Mean", names(full_set))
+names(tidy_set1) <- gsub(".std...", "Std", names(full_set))
+names(tidy_set1)
+
+#Creating a second tidy data set for the average of each activity by subject
+tidy_set2 <- tidy_set1 %>%
+    group_by(subject_id, activity_name) %>%
+    summarise_all(funs(mean), na.rm = TRUE) %>%
+    arrange(subject_id, activity_name)
+
+write.table(tidy_set2, "tidy_set2.txt", row.names = FALSE)
